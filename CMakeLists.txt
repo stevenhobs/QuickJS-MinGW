@@ -52,8 +52,8 @@ if(CONFIG_WERROR)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
 endif()
 if(CONFIG_LTO)
-    set(FLAG_LTO "-flto")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG_LTO}")
+    set(QJSC_LTO "-DCONFIG_LTO")
+    set(CMAKE_C_FLAGS "-flto ${CMAKE_C_FLAGS}")
 endif()
 
 # Definions
@@ -82,9 +82,9 @@ target_link_libraries(quickjs PUBLIC m pthread dl)
 
 # qjsc bin build
 if(CONFIG_QJSC_CC STREQUAL "host")
-add_compile_definitions(qjsc CONFIG_CC=${CMAKE_C_COMPILER} PREFIX)
+add_compile_definitions(qjsc ${QJSC_LTO} CONFIG_CC=${CMAKE_C_COMPILER})
 elseif(CONFIG_QJSC_CC STREQUAL "target")
-add_compile_definitions(qjsc CONFIG_CC=${CC} PREFIX)
+add_compile_definitions(qjsc ${QJSC_LTO} CONFIG_CC=${CC})
 endif()
 add_executable(qjsc "src/cli/qjsc.c")
 target_link_libraries(qjsc PRIVATE quickjs)
@@ -96,13 +96,13 @@ set(CALC_JS_FILE "${CMAKE_SOURCE_DIR}/src/cli/qjscalc.js")
 set(CALC_C_FILE "${CMAKE_CACHEFILE_DIR}/gen/qjscalc.c")
 add_custom_command(
     OUTPUT ${REPL_C_FILE}
-    COMMAND qjsc ${FLAG_LTO} -c -o ${REPL_C_FILE} -m ${REPL_JS_FILE}
+    COMMAND qjsc -c -o ${REPL_C_FILE} -m ${REPL_JS_FILE}
     COMMENT "Generating repl.c file for the qjs binary"
     VERBATIM
 )
 add_custom_command(
     OUTPUT ${CALC_C_FILE}
-    COMMAND qjsc ${FLAG_LTO} -fbignum -c -o ${CALC_C_FILE} ${CALC_JS_FILE}
+    COMMAND qjsc -fbignum -c -o ${CALC_C_FILE} ${CALC_JS_FILE}
     COMMENT "Generating qjcalc.c file for the qjs binary"
     VERBATIM
 )
@@ -111,4 +111,6 @@ add_custom_command(
 add_executable(qjs "src/cli/qjs.c" ${REPL_C_FILE} ${CALC_C_FILE})
 target_link_libraries(qjs PRIVATE quickjs)
 
-# TODO add_executable(run-test262 ...)
+# run-262test bin build
+add_executable(run-test262 "src/cli/run-test262.c")
+target_link_libraries(run-test262 PRIVATE quickjs)
