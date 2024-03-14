@@ -34,7 +34,7 @@ set(CMAKE_C_STANDARD "17")
 
 # Preset for the Windows system platform
 if(CONFIG_WIN32)
-    if(CMAKE_HOST_WIN32 AND NOT CMAKE_COMPILER_IS_GNUCC)
+    if(CMAKE_HOST_WIN32 AND NOT "${MINGW}")
         message(FATAL_ERROR "**MinGW toolkit is required**")
     elseif(CONFIG_FIX_DEPS)
         message(STATUS "Fix-deps: Use dlfcn for lib \"ld\"")
@@ -46,7 +46,7 @@ if(CONFIG_WIN32)
 endif()
 
 # C flags
-set(CMAKE_C_FLAGS "-fwrapv -Wall")
+set(CMAKE_C_FLAGS "-fPIC -fwrapv -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-array-bounds -Wno-format-truncation")
 if(CONFIG_WERROR)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
@@ -78,7 +78,7 @@ add_library(quickjs SHARED
     "src/rt/quickjs-libc.c"
     "src/rt/quickjs.c"
 )
-target_link_libraries(quickjs PUBLIC m pthread dl)
+target_link_libraries(quickjs PUBLIC m pthread dl "-Llib")
 
 # qjsc bin build
 if(CONFIG_QJSC_CC STREQUAL "host")
